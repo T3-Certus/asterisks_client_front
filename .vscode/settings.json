@@ -1,0 +1,4 @@
+{
+  "css.lint.unknownAtRules": "warning",
+  "css.lint.unknownProperties": "warning"
+}
