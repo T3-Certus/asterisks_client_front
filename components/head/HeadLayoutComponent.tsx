@@ -1,10 +1,8 @@
 import Head from "next/head";
 import { FunctionComponent } from "react";
+import { HeadProps } from "../../utils/interfaces/global";
 
-interface HeadProps {
-  description: string,
-  section: string
-}
+
 const HeadComponent: FunctionComponent<HeadProps> = ({ description, section }) => {
   return (<Head>
     <meta name="google-site-verification" content="KJ2ydT0w5ldU_28AlENYqOlPTemIwzp8CMRI4YmsXlM" />

@@ -3,10 +3,39 @@ module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
+    "./views/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    // fontSize: {
+    //   'sm': '0.875rem',
+    //   'base': '1rem',
+    //   'lg': '1.125rem',
+    //   'xl': '1.25rem',
+    //   '2xl': '1.563rem',
+    //   '3xl': '1.875rem',
+    //   '4xl': '2.5rem',
+    //   '5xl': '3.052rem',
+    //   '6xl': '3.75rem',
+    //   '7xl': '4.5rem',
+    //   '8xl': '6rem',
+    //   '9xl': '8rem'
+    // },
     extend: {
-
+      backgroundColor: {
+        'rojo': "#ff0000",
+        'celeste': "#85c1e9",
+        'azul': "#7d3c98",
+        'morado': " #76448a ",
+        'verde': " #239b56 ",
+        'crema': " #fcf3cf ",
+        'amarillo': " #f4d03f ",
+        'negro': " #17202a ",
+        'gris': " #abb2b9 ",
+        'marron': " #784212 ",
+        'naranja': " #e67e22 ",
+        'blanco': "ffffff",
+        'acero': " #1f618d "
+      },
       backgroundImage: {
         'backgroundIndex': "url('/img/background.jpg')",
         'horizontalIndex': "url('/img/horizontal_index.jpg')",

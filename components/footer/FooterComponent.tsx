@@ -8,9 +8,9 @@ import {
 
 const FooterComponent = () => {
   return (
-    <footer className="sticky z-30 flex items-center justify-center w-full h-screen px-10 bg-charleston">
+    <footer className="sticky z-30 flex items-center justify-center w-full px-10 h-90% sm:h-screen bg-charleston">
       <div className="flex flex-row justify-around w-full">
-        <h2 className="text-6xl font-Pacifico text-ivory">Glorious</h2>
+        <h2 className="text-6xl font-Pacifico text-ivory">Asterisks</h2>
         {/* col1 */}
         <ul className="flex flex-col gap-4">
           <li className="mb-2 -ml-4 text-xl font-Comfortaa text-ivory">
