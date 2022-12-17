@@ -92,11 +92,11 @@ const ProductOptions: FunctionComponent<IPopupProps> = ({
 
       await getUserCart()
         .then(async (res) => {
-          if (!res.success) {
+          if (!res!.success) {
             window.alert("Ha ocurrido un error");
           } else {
             console.log({ res });
-            await AddProductService(user.id_user, res.cart, {
+            await AddProductService(user.id_user, res!.cart, {
               globalProductId: product.globalCode,
               individualProductId: product.individualCode,
               quantity: product.quantity,
@@ -125,20 +125,25 @@ const ProductOptions: FunctionComponent<IPopupProps> = ({
       const userCart = await handlerGetExternal(urlGetCartService, at!);
       const resUserCart = userCart.res;
       if (resUserCart.error) {
+        console.log(resUserCart.errorMessage )
+        console.log(resUserCart.httpStatus )
+
         if (
-          resUserCart.status == 404 &&
+          resUserCart.httpStatus == 404 &&
           resUserCart.errorMessage == "Resource not found"
         ) {
+          console.log("aca")
           CreateCartService(urlCreateCartService, userId, at);
         } else {
           throw new Error(`${resUserCart.errorMessage}`);
         }
+      }else{
+        console.log(resUserCart);
+        return {
+          success: true,
+          cart: resUserCart.responseBody.selectedProducts,
+        };
       }
-      console.log(resUserCart);
-      return {
-        success: true,
-        cart: resUserCart.responseBody.selectedProducts,
-      };
     } catch (error) {
       throw new Error(`${error}`);
     }

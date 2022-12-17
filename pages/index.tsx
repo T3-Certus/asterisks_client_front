@@ -8,7 +8,6 @@ interface PageProps{
   success: boolean
 }
 
-const serviceUrl = "https://ms-aster-store-misc-production.up.railway.app/v1/products/categories"
 const HomePrincipalComponent = ({resJson, error, success}: PageProps) => {
 
   console.log({resJson, error, success})
@@ -18,7 +17,7 @@ const HomePrincipalComponent = ({resJson, error, success}: PageProps) => {
     <div>
       <HeadLayoutComponent
         section={"Index"}
-        description={"Glorious, tienda virtual"}
+        description={"Asterisks, tienda virtual"}
       />
       <NavbarComponent />
       {/* header */}
