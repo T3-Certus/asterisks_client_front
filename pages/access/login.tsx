@@ -1,12 +1,15 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { HeadLayoutComponent } from "../../components";
-import { AsterisksServices, ILoginUser } from "../../utils";
+import { ErrorComponent, HeadLayoutComponent } from "../../components";
+import { AsterisksServices, ILoginUser, useAuth } from "../../utils";
 import { handlerPostExternal } from "../../utils/resources/fetchHandlers";
 import { useCookies } from "react-cookie";
 
 const UserLogin: NextPage = () => {
 	const router = useRouter();
+	const userData = useAuth()
+	const user = userData[0]
+	console.log({ user })
 	const [cookie, setCookie] = useCookies(["accessToken"])
 
 	async function handleSubmit(e: any) {
@@ -30,7 +33,7 @@ const UserLogin: NextPage = () => {
 					sameSite: true
 				})
 				window.alert(res.serverMessage)
-				router.push('/')
+				router.push('/').then(() => router.reload())
 			}
 			if (res.error) {
 				window.alert(res.serverMessage)
@@ -40,6 +43,10 @@ const UserLogin: NextPage = () => {
 			window.alert(`${err}`)
 			router.reload()
 		})
+	}
+
+	if (user.id_user) {
+		return <ErrorComponent data={"Debes cerrar sesión antes"} />;
 	}
 
 	return (

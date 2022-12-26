@@ -108,8 +108,9 @@ const ProductOptions: FunctionComponent<IPopupProps> = ({
                 );
               } else {
                 window.alert("Se agregó el producto con éxito");
+                hidePopup()
               }
-            }).catch(err => window.alert(err));
+            }).catch(err => window.alert(`Vuelva a intentar, ${err}`));
           }
         })
         .catch((e) => window.alert(e));
@@ -125,8 +126,8 @@ const ProductOptions: FunctionComponent<IPopupProps> = ({
       const userCart = await handlerGetExternal(urlGetCartService, at!);
       const resUserCart = userCart.res;
       if (resUserCart.error) {
-        console.log(resUserCart.errorMessage )
-        console.log(resUserCart.httpStatus )
+        console.log(resUserCart.errorMessage)
+        console.log(resUserCart.httpStatus)
 
         if (
           resUserCart.httpStatus == 404 &&
@@ -137,7 +138,7 @@ const ProductOptions: FunctionComponent<IPopupProps> = ({
         } else {
           throw new Error(`${resUserCart.errorMessage}`);
         }
-      }else{
+      } else {
         console.log(resUserCart);
         return {
           success: true,
@@ -149,25 +150,25 @@ const ProductOptions: FunctionComponent<IPopupProps> = ({
     }
   }
 
-  async function pubData(cartInput: any) {
-    const uid = user.id_user;
-    try {
-      const req = await fetch(`/api/users/${uid}/cart`, {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(cartInput),
-      });
-      const data = await req.json();
-      if (data.success) {
-        window.alert("Tu producto ha sido agregado al carrito");
-        hidePopup();
-      }
-    } catch (error) {
-      window.alert(error);
-    }
-  }
+  // async function pubData(cartInput: any) {
+  //   const uid = user.id_user;
+  //   try {
+  //     const req = await fetch(`/api/users/${uid}/cart`, {
+  //       method: "PUT",
+  //       headers: {
+  //         "Content-type": "application/json",
+  //       },
+  //       body: JSON.stringify(cartInput),
+  //     });
+  //     const data = await req.json();
+  //     if (data.success) {
+  //       window.alert("Tu producto ha sido agregado al carrito");
+  //       hidePopup();
+  //     }
+  //   } catch (error) {
+  //     window.alert(error);
+  //   }
+  // }
 
   return (
     <div

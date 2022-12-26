@@ -1,11 +1,13 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { HeadLayoutComponent } from "../../components";
-import { AsterisksServices, IRegisterUserBody } from "../../utils";
+import { ErrorComponent, HeadLayoutComponent } from "../../components";
+import { AsterisksServices, IRegisterUserBody, useAuth } from "../../utils";
 import { handlerPostExternal } from "../../utils/resources/fetchHandlers";
 
 const UserSignup: NextPage = () => {
 	const router = useRouter();
+	const userData = useAuth()
+	const user = userData[0]
 
 	async function handleSubmit(e: any) {
 		e.preventDefault();
@@ -41,6 +43,10 @@ const UserSignup: NextPage = () => {
 			window.alert(`${err}`)
 			router.reload()
 		})
+	}
+
+	if (user.id_user) {
+		return <ErrorComponent data={"Debes cerrar sesión antes"} />;
 	}
 
 	return (

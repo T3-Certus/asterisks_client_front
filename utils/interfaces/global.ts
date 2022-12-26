@@ -69,6 +69,12 @@ interface IAuthContext {
   user_role: string;
 }
 
+interface ICartPayload {
+  globalProductId: number,
+  individualProductId: number,
+  quantity: number
+}
+
 export type {
   HeadProps,
   IRegisterUserBody,
@@ -79,4 +85,5 @@ export type {
   ProductSize,
   ISizeSelector,
   ILoginUser,
+  ICartPayload
 };

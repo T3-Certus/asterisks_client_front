@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { AuthContext } from "../utils";
 import { CookiesProvider } from "react-cookie";
 
-function Loading() {
+export function Loading() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ function Loading() {
     const handleComplete = () =>
       setTimeout(() => {
         setLoading(false);
-        router.reload();
+        // router.reload();
       }, 500);
 
     router.events.on("routeChangeStart", handleStart);
