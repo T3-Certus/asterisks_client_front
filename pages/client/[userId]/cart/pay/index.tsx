@@ -79,7 +79,7 @@ const PayMenu: NextPage = () => {
         clearInterval(evalT)
       }
 
-    }, 5000)
+    }, 1000)
 
     // if (!odh) {
     //   setDecodedData({
