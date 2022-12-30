@@ -1,15 +1,17 @@
-export async function handlerPostExternal(url: string, body: any, token?: any) {
-  let res;
+import { IGenericExternalServiceResponse } from "../interfaces";
+
+export async function handlerPostExternal(url: string, body: any, token?: any): Promise<IGenericExternalServiceResponse> {
+  let res: IGenericExternalServiceResponse;
 
   try {
     const response = await fetch(url, {
       body: JSON.stringify(body),
       headers: token
-      ? {
+        ? {
           "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         }
-      : { "Content-Type": "application/json" },
+        : { "Content-Type": "application/json" },
       method: "POST",
     });
     const responseJson = await response.json();
@@ -18,20 +20,20 @@ export async function handlerPostExternal(url: string, body: any, token?: any) {
     throw new Error(`${error}`);
   }
 
-  return { res };
+  return res;
 }
 
-export async function handlerGetExternal(url: string, token?: string) {
-  let res;
+export async function handlerGetExternal(url: string, token?: string): Promise<IGenericExternalServiceResponse> {
+  let res: IGenericExternalServiceResponse;
   const tok = "Bearer " + token
 
   try {
     const response = await fetch(url, {
       headers: token
         ? {
-            "Content-Type": "application/json",
-            "Authorization": tok,
-          }
+          "Content-Type": "application/json",
+          "Authorization": tok,
+        }
         : { "Content-Type": "application/json" },
       method: "GET",
     });
@@ -42,21 +44,30 @@ export async function handlerGetExternal(url: string, token?: string) {
     throw new Error(`${error}`)
   }
 
-  return {res}
+  return res
 }
 
-export async function handlerDeleteExternal(url: string, body: any, token?: string){
-  let res;
-
+export async function handlerDeleteExternal(url: string, body?: any, token?: string): Promise<IGenericExternalServiceResponse> {
+  let res: IGenericExternalServiceResponse;
+  console.log({ body })
   try {
-    const response = await fetch(url, {
+    const response = body === 0 ? await fetch(url, {
+
+      headers: token
+        ? {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+        : { "Content-Type": "application/json" },
+      method: "DELETE",
+    }) : await fetch(url, {
       body: JSON.stringify(body),
       headers: token
-      ? {
+        ? {
           "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         }
-      : { "Content-Type": "application/json" },
+        : { "Content-Type": "application/json" },
       method: "DELETE",
     });
     const responseJson = await response.json();
@@ -65,22 +76,22 @@ export async function handlerDeleteExternal(url: string, body: any, token?: stri
     throw new Error(`${error}`);
   }
 
-  return { res };
+  return res;
 }
 
-export async function handlerPutExternal(url: string, body: any, token?: string){
-  let res
+export async function handlerPutExternal(url: string, body: any, token?: string): Promise<IGenericExternalServiceResponse> {
+  let res: IGenericExternalServiceResponse
 
   try {
     const response = await fetch(url, {
       method: 'PUT',
       body: JSON.stringify(body),
       headers: token
-      ? {
+        ? {
           "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         }
-      : { "Content-Type": "application/json" },
+        : { "Content-Type": "application/json" },
     })
     const responseJson = await response.json();
     res = responseJson;
@@ -88,5 +99,5 @@ export async function handlerPutExternal(url: string, body: any, token?: string)
     throw new Error(`${error}`);
   }
 
-  return {res}
+  return res
 }

@@ -1,0 +1,3 @@
+Se emplean los servicios en lugar de las llamadas directas a los handlers debido a que muchas veces es necesario agregar lógica expecífica despues de la consulta hacia algún servicio externo, como es el caso del de carrito de compras en el que despues de recibir el objeto response se le debe destructurar y agregar una logica relativamente extensa.
+
+Tambien es factible hacer la llamada directa a los handlers en el caso de que la lógica a agregar sea mínima o se requiera un manejo de errores/respuestas sencillo

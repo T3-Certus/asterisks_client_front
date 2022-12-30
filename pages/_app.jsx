@@ -6,6 +6,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { AuthContext } from "../utils";
 import { CookiesProvider } from "react-cookie";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
 export function Loading() {
   const router = useRouter();
@@ -39,11 +41,17 @@ export function Loading() {
 }
 
 function MyApp({ Component, pageProps }) {
+  const stripePromise = loadStripe(
+    "pk_test_51MJOVLAOGi8byV9OpHPvXSu7gTkMbD4VXDHU6DpuNWbEznezXkXhk3wX7xaQaQ6gexEk6YXE4LTI5TVtFZtkoiHQ00gFRYt8Rd"
+  );
+
   return (
     <AuthContext>
       <CookiesProvider>
-        <Loading />
-        <Component {...pageProps} />
+        <Elements stripe={stripePromise}>
+          <Loading />
+          <Component {...pageProps} />
+        </Elements>
       </CookiesProvider>
     </AuthContext>
   );

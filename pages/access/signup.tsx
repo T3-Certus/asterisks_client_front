@@ -30,7 +30,7 @@ const UserSignup: NextPage = () => {
 			user_cellphone: cellphone
 		}
 
-		await handlerPostExternal(urlService, body).then(({ res }) => {
+		await handlerPostExternal(urlService, body).then((res) => {
 			if (res.success) {
 				window.alert(res.serverMessage)
 				router.push('/access/login')

@@ -11,8 +11,8 @@ export async function UpdateCartService(userId: number, uploadedCart: ICartPaylo
     }
 
     const updatedCart = await handlerPostExternal(serviceUrl, body, at)
-    if (updatedCart.res.error) {
-      throw new Error(`${updatedCart.res.serverMessage}`)
+    if (updatedCart.error) {
+      throw new Error(`${updatedCart.serverMessage}`)
     }
 
     return {

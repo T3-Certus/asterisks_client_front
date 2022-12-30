@@ -23,7 +23,7 @@ const UserLogin: NextPage = () => {
 			user_password: password,
 		};
 
-		await handlerPostExternal(urlService, body).then(({ res }) => {
+		await handlerPostExternal(urlService, body).then((res) => {
 			if (res.success) {
 				localStorage.setItem("refreshToken", res.responseBody.refreshToken)
 				localStorage.setItem("accessToken", res.responseBody.accessToken)

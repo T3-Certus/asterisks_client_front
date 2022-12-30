@@ -28,6 +28,7 @@ interface PageProps {
   data: any;
   success: boolean;
   error: boolean;
+  reload?: boolean
 }
 
 interface ProductSize {
@@ -75,6 +76,45 @@ interface ICartPayload {
   quantity: number
 }
 
+interface IPersonalDataComponentProps {
+  name: string,
+  surname: string,
+  cellphone: string,
+  email: string
+}
+
+interface IUserAddress {
+  id_user_address?: number,
+  id_user?: number,
+  country: string,
+  province: string,
+  city: string,
+  address: string,
+  address_number: string,
+  road_type: string
+}
+
+interface IAddressesPanelProps {
+  addresses: IUserAddress[],
+  error: boolean
+}
+
+interface IGenericInternalServiceResponse {
+  error: boolean,
+  success: boolean
+  data: any
+}
+
+interface IGenericExternalServiceResponse {
+  httpStatus: number,
+  serverMessage: string,
+  moreDetails: string,
+  responseBody: any,
+  errorMessage?: string | Array<any>,
+  error: boolean,
+  success: boolean
+}
+
 export type {
   HeadProps,
   IRegisterUserBody,
@@ -85,5 +125,10 @@ export type {
   ProductSize,
   ISizeSelector,
   ILoginUser,
-  ICartPayload
+  ICartPayload,
+  IPersonalDataComponentProps,
+  IUserAddress,
+  IAddressesPanelProps,
+  IGenericExternalServiceResponse,
+  IGenericInternalServiceResponse
 };

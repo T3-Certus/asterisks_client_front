@@ -1,11 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faArrowAltCircleUp, faArrowUp, faMicrochip, faMinus, faPlus, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   AsterisksServices,
   handlerGetExternal,
   handlerPostExternal,
+  IUserAddress,
   PageProps,
   parseCookies,
   useAuth,
@@ -21,9 +22,11 @@ import PrivateRoute from "../../../../components/errors/PrivateComponent";
 import { GetServerSideProps, NextPage } from "next";
 import { capitalize, transformer, discounter } from "../../../../utils";
 import { UpdateCartService } from "../../../../services/user_cart/updateCartService";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
+import jwt from "jsonwebtoken";
+import Link from "next/link";
 
-const UserBag: NextPage<PageProps> = ({ success, error, data }) => {
+const UserBag: NextPage<PageProps> = ({ success, error, data, reload }) => {
   console.log(success, error, data);
   const userData = useAuth();
   const user = userData[0];
@@ -34,52 +37,78 @@ const UserBag: NextPage<PageProps> = ({ success, error, data }) => {
   const [totalItems, setTotalItems] = useState(0)
   const [totalPrice, setTotalPrice] = useState(0)
   const [selectedProductId, setSelectedProductId] = useState(0)
+  const [hasWithoutStock, setHasWithoutStock] = useState(false)
+  const [addressInput, setAddressInput] = useState<IUserAddress>({
+    id_user: 0,
+    id_user_address: 0,
+    address: "",
+    address_number: "",
+    city: "",
+    country: "",
+    province: "",
+    road_type: ""
+  })
+  // console.log({ hasWithoutStock })
+  // console.log({ addressInput })
   // console.log({ selectedProductId });
 
+  const shippingPrice = 1000
+
+
   useEffect(() => {
-    const totalQuantityPrice = (): number[] => {
-      let quantities: number[] = []
-      let prices: number[] = []
-      localCart.map((p: any) => {
-        let qnt = Number(p.quantity)
-        let pri = Number(p.product_price)
-        let finalPrice: number = 0
-
-        if (p.product_stock > 0) {
-          quantities.push(qnt)
-          if (qnt > 0) {
-            if (p.hasOffer && p.percent_discount) {
-              finalPrice = pri * ((100 - p.percent_discount) * 0.01) * qnt
-              prices.push(finalPrice)
-            } else {
-              finalPrice = pri * qnt
-              prices.push(finalPrice)
-            }
-          }
-        }
-
-      })
-      console.log({ quantities })
-      console.log({ prices })
-      const totalQnt = quantities.reduce((a, b) => a + b, 0)
-      const totalPri = prices.reduce((a, b) => a + b, 0)
-      return [totalQnt, totalPri]
-    }
-
-    const [totalQnt, totalPri] = totalQuantityPrice()
-
-    setTotalItems(totalQnt)
-    setTotalPrice(totalPri)
-
-    // const saveChanges = async () => {
-    //   await handlerSaveCartChanges()
+    // if (reload) {
+    //   router.reload()
     // }
+    if (!error) {
+      setHasWithoutStock(false)
 
-    // saveChanges()
-  }, [localCart])
+      const totalQuantityPrice = (): number[] => {
+        let quantities: number[] = []
+        let prices: number[] = []
+        localCart.map((p: any) => {
+          let qnt = Number(p.quantity)
+          let pri = Number(p.product_price)
+          let finalPrice: number = 0
+
+          if (p.product_stock > 0) {
+            quantities.push(qnt)
+            if (qnt > 0) {
+              if (p.hasOffer && p.percent_discount) {
+                finalPrice = pri * ((100 - p.percent_discount) * 0.01) * qnt
+                prices.push(finalPrice)
+              } else {
+                finalPrice = pri * qnt
+                prices.push(finalPrice)
+              }
+            }
+          } else {
+            setHasWithoutStock(true)
+          }
+
+        })
+        // console.log({ quantities })
+        // console.log({ prices })
+        const totalQnt = quantities.reduce((a, b) => a + b, 0)
+        const totalPri = prices.reduce((a, b) => a + b, 0)
+        return [totalQnt, totalPri + shippingPrice]
+      }
+
+      const [totalQnt, totalPri] = totalQuantityPrice()
+
+      setTotalItems(totalQnt)
+      setTotalPrice(totalPri)
+
+      // const saveChanges = async () => {
+      //   await handlerSaveCartChanges()
+      // }
+
+      // saveChanges()
+
+    }
+  }, [localCart, reload])
 
   if (error) {
-    return <ErrorComponent data={data} />;
+    return <ErrorComponent data={"Vuelva a inicio y refresque la página"} />;
   }
 
   if (!user || user.id_user == 0) {
@@ -92,6 +121,18 @@ const UserBag: NextPage<PageProps> = ({ success, error, data }) => {
       if (p.id_individual_product != productId) {
         return p
       } else {
+        if (e.target.value > p.product_stock) {
+          return {
+            ...p,
+            quantity: Number(p.product_stock)
+          }
+        }
+        if (e.target.value < 1) {
+          return {
+            ...p,
+            quantity: 1
+          }
+        }
         return {
           ...p,
           quantity: Number(e.target.value)
@@ -103,12 +144,14 @@ const UserBag: NextPage<PageProps> = ({ success, error, data }) => {
   }
 
   function handleDeleteProduct(productId?: number) {
+    console.log({ productId })
     console.log({ selectedProductId })
-    console.log(localCart)
-    let updatedCart = localCart.filter((p: any) =>
-      p.id_individual_product != productId ? productId : selectedProductId
-    )
-    console.log({ updatedCart })
+    // console.log(localCart)
+    let updatedCart = productId ? localCart.filter((p: any) =>
+      p.id_individual_product != productId
+    ) : localCart.filter((p: any) =>
+      p.id_individual_product != selectedProductId)
+    // console.log({ updatedCart })
     setLocalCart(updatedCart)
   }
 
@@ -143,6 +186,66 @@ const UserBag: NextPage<PageProps> = ({ success, error, data }) => {
         window.alert(`Vuelva a intentar, ${err}`)
       })
     }
+  }
+
+  // esta funcion encriptara los datos del carrito de compras final, precios y direcciones, de manera que solo se pueda
+  // acceder a la ruta "generar-orden" si se cuenta con la información exacta encriptada apretando el boton contrinuar
+  function generateOrderHash() {
+    const sec = process.env.NEXT_PUBLIC_FRONT_TOKEN_PRIVATE_KEY!
+    console.log(sec)
+
+    let finalCart: any[] = []
+    let quantities: number[] = []
+    let prices: number[] = []
+
+    data.cart.map((p: any) => {
+      // solo se envian estos datos dado que el backend ya se encargad e recoger el resto :)
+      let data = {
+        individualProductId: p.id_individual_product,
+        quantity: p.quantity
+      }
+
+      let qnt = Number(p.quantity)
+      let pri = Number(p.product_price)
+
+      if (p.quantity > 0) {
+        finalCart.push(data)
+        quantities.push(qnt)
+
+
+        if (p.hasOffer && p.percent_discount) {
+          finalPrice = pri * ((100 - p.percent_discount) * 0.01) * qnt
+          prices.push(finalPrice)
+        } else {
+          finalPrice = pri * qnt
+          prices.push(finalPrice)
+        }
+      }
+    })
+
+    console.log({ prices })
+
+    let finalQuantity = quantities.reduce((a, b) => a + b, 0)
+    let finalPrice = prices.reduce((a, b) => a + b, 0)
+
+    const currentDate = new Date()
+    const delivery_date = new Date(new Date(currentDate).setDate(currentDate.getDate() + 3)).toLocaleString()
+
+    const payload = {
+      user_id: user.id_user,
+      address: addressInput,
+      products: finalCart,
+      finalQuantity: finalQuantity,
+      subtotal: finalPrice,
+      shippingPrice: shippingPrice,
+      deliveryDate: delivery_date,
+      finalPrice: finalPrice + shippingPrice
+    }
+    console.log({ payload })
+    const cr = jwt.sign(payload, sec, { expiresIn: "120000" })
+    // const cr = jwt.sign(payload, sec)
+    // console.log(cr)
+    router.push(`/client/${user.id_user}/cart/pay?odh=${cr}`)
   }
 
   function showPopup() {
@@ -216,20 +319,36 @@ const UserBag: NextPage<PageProps> = ({ success, error, data }) => {
                           : transformer(product_price)} {percent_discount > 0 ? <span className="text-green"> | -%{percent_discount}</span> : <></>}
                       </p>
                     </div>
-                    <div className="flex flex-col items-start justify-center">
+
+                    <div className="flex flex-col items-start justify-center gap-3">
                       {
                         product_stock > 0 ? (
-                          <label className="mr-3 text-sm w-fit font-Comfortaa text-charleston">
-                            Cantidad:{" "}
-                            <input
-                              type="number"
-                              defaultValue={quantity}
-                              max={product_stock}
-                              min="1"
-                              onChange={(e) => { handleUpdateProductQnt(id_individual_product, e) }}
-                              className="w-10 mr-3"
-                            />
-                          </label>
+                          <div >
+                            <label className="mr-3 text-sm w-fit font-Comfortaa text-charleston">
+                              Cantidad:{" "}
+                            </label>
+                            <div className="flex items-center gap-2 ">
+
+                              <input
+                                type="number"
+                                max={product_stock}
+                                min="1"
+                                value={quantity}
+                                onChange={(e) => { handleUpdateProductQnt(id_individual_product, e) }}
+                                className="w-10 mr-3"
+                              />
+
+                              {/* <div className="flex flex-col">
+                                <div onClick={() => { }}>
+                                  <FontAwesomeIcon icon={faPlus} />
+                                </div>
+                                <div>
+                                  <FontAwesomeIcon icon={faMinus} />
+                                </div>
+                              </div> */}
+                            </div>
+
+                          </div>
 
                         ) : <p>Sin stock</p>
                       }
@@ -247,18 +366,69 @@ const UserBag: NextPage<PageProps> = ({ success, error, data }) => {
           {data.cart.length == 0 ? (
             <></>
           ) : (
-            <div className="col-start-7 gap-4 h-50% flex flex-col justify-center pl-6  col-end-11 shadow-xl bg-ivory rounded-xl">
+            <div className="flex flex-col justify-center h-auto col-start-7 col-end-11 gap-4 px-6 py-5 shadow-xl bg-ivory rounded-xl">
               <h2 className="text-2xl font-Pacifico text-charleston">
                 Resumen de la orden
               </h2>
-              <p className="text-sm font-Comfortaa text-charleston">
-                Costo de envío no incluído
-              </p>
-              <p>Cantidad de productos: {totalItems}</p>
-              <p>Total: {transformer(totalPrice)}</p>
-              <div className="px-3 py-2 cursor-pointer w-fit hover:bg-teal bg-charleston rounded-xl">
-                <p className="text-ivory ">Continuar compra</p>
+
+              <h2 className="font-bold">Tipo de entrega</h2>
+              <div className="flex justify-between text-sm">
+                <div className="flex flex-col gap-3">
+                  {/* <p>Entrega rápida: Llega mañana</p> */}
+                  <p>Entrega regular: Llega en tres días</p>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {/* <p>S/. 20</p> */}
+                  <p>S/. 10</p>
+                </div>
               </div>
+
+              {
+                !data.addresses || data.addresses.length == 0 ? (
+                  <Link href={`/client/${user.id_user}`}>
+                    <a className="text-sm font-bold font-Comfortaa text-charleston" >No tienes direcciones registradas, registra una para continuar con tu compra.</a>
+
+                  </Link>
+
+                ) : (
+                  <select onChange={(e) => { setAddressInput(JSON.parse(e.target.value)) }} name="addresses" id="addresses">
+                    <option value={JSON.stringify({
+                      id_user: 0,
+                      id_user_address: 0,
+                      address: "",
+                      address_number: "",
+                      city: "",
+                      country: "",
+                      province: "",
+                      road_type: ""
+                    })} >Seleccione una dirección</option>
+                    {
+                      data.addresses.map((a: any) => (
+                        <option value={JSON.stringify(a)} key={a.id_user_address}>{a.road_type}{" "}{a.address}{" "}{a.address_number}{", "}{a.city}{", "}{a.province}</option>
+
+                      ))
+                    }
+                  </select>
+                )
+              }
+
+              <p className="font-bold">Cantidad de productos: {totalItems}</p>
+              <p className="font-bold">Total: {transformer(totalPrice)}</p>
+
+
+              {
+                hasWithoutStock || !addressInput.id_user ? (
+                  <div className="px-3 py-2 w-fit bg-green rounded-xl">
+                    <p className="text-ivory ">Continuar compra</p>
+                  </div>
+
+                ) : (
+                  <div onClick={generateOrderHash} className="px-3 py-2 cursor-pointer w-fit hover:bg-teal bg-charleston rounded-xl">
+                    <p className="text-ivory ">Continuar compra</p>
+                  </div>
+
+                )
+              }
               {
                 localCart != originalCart ? (
                   <div onClick={handlerSaveCartChanges} className="px-3 py-2 cursor-pointer w-fit hover:bg-green bg-teal rounded-xl">
@@ -282,7 +452,16 @@ export default UserBag;
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { userId } = context.params!;
   const data = parseCookies(context.req);
-  // console.log({data})
+  if (!data || !data.accessToken) {
+    return {
+      props: {
+        data: "Ha ocurrido un error, vuelva a intentar",
+        error: true,
+      }
+
+    }
+  }
+  console.log({ data })
   const at = JSON.parse(data.accessToken);
   // const at = data.accessToken
   // console.log({at})
@@ -294,28 +473,49 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     AsterisksServices.ms_products_index + "/products/individuals/multiple";
   const bodyNewCart = { userId: userId };
 
+  // se valida si el token pertenece al usuario actual
+  const decTok: any = jwt.decode(at)
+  console.log(decTok)
+
+  if (decTok!._id != userId) {
+    return {
+      props: {
+        error: true,
+        data: "Acceso no autorizado"
+      }
+    }
+  }
+
   try {
     // se intenta buscar el carrito registrado al usuario
     const userCart = await handlerGetExternal(urlGetCartService, at!);
-    const { res } = userCart;
-    // console.log(res)
-    if (res.error) {
+    if (userCart.error) {
+      if (userCart.httpStatus == 401) {
+        return {
+          props: {
+            data: userCart.serverMessage,
+            error: true,
+            reload: true
+          }
+        }
+      }
+
       // si no existe un carrito para el cliente, se intenta crear uno
-      if (res.httpStatus == 404 && res.errorMessage == "Resource not found") {
+      if (userCart.httpStatus == 404 && userCart.errorMessage == "Resource not found") {
         try {
           const newCart = await handlerPostExternal(
             urlCreateCartService,
             bodyNewCart,
             at
           );
-          if (newCart.res.error) {
-            throw new Error(`${newCart.res.serverMessage}`);
+          if (newCart.error) {
+            throw new Error(`${newCart.serverMessage}`);
           }
           return {
             props: {
               success: true,
               data: {
-                cart: newCart.res.responseBody.selectedProducts,
+                cart: newCart.responseBody.selectedProducts,
               },
             },
           };
@@ -327,38 +527,34 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       return {
         props: {
           error: true,
-          data: res.serverMessage,
+          data: userCart.serverMessage,
         },
       };
     }
+
     // si se encontró el carrito
     // se busca la informacion completa de los productos que lo conforman
     let individualsIds: number[] = [];
-    const selectedProducts = res.responseBody.selectedProducts;
-    // console.log({selectedProducts})
-
+    const { selectedProducts } = userCart.responseBody;
     for (let i = 0; i < selectedProducts.length; i++) {
       if (selectedProducts[i]) {
         individualsIds.push(selectedProducts[i].individualProductId);
       }
     }
-    // console.log({individualsIds})
-    const body = {
-      individuals: individualsIds,
-    };
-    // console.log({body})
+
     const individuals = await handlerPostExternal(
       urlGetMultipleIndividuals,
-      body
+      {
+        individuals: individualsIds,
+      }
     );
-    console.log({ individuals });
-    if (individuals.res.error) {
-      throw new Error(`${individuals.res.serverMessage}`);
+    if (individuals.error) {
+      throw new Error(`${individuals.serverMessage}`);
     }
+    const cart = selectedProducts
+    const productsOnCart = individuals.responseBody
 
-    const cart = res.responseBody.selectedProducts
-    const productsOnCart = individuals.res.responseBody
-
+    // se ordena la informacion de los productos del carrito
     let productsCompiledData = (): any[] => {
 
       let selectedProductsArray: any[] = []
@@ -385,20 +581,36 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
       return selectedProductsArray
     }
-
     const productsData = productsCompiledData()
-    // console.log({ productsData })
 
+    // FINALMENTE se buscan las direcciones del cliente
+    const urlGetAddressesService = AsterisksServices.ms_address_management + "/get-addresses/" + userId
+    const addresses = await handlerGetExternal(urlGetAddressesService, at)
+
+    if (addresses.error) {
+      return {
+        props: {
+          success: true,
+          data: {
+            // selectedProducts: individuals.res.responseBody,
+            // addressError: addresses.serverMessage,
+            cart: productsData
+          },
+        },
+      };
+
+    }
+
+    // no se distingue si el servicio responde bien o mal dado que las direcciones no son datos críticos
     return {
       props: {
-        success: true,
         data: {
-          // cart: res.responseBody.selectedProducts,
-          // selectedProducts: individuals.res.responseBody,
-          cart: productsData
+          // addressError: addresses.serverMessage,
+          addresses: addresses.responseBody, cart: productsData
         },
-      },
-    };
+        success: true
+      }
+    }
   } catch (error) {
     return {
       props: {

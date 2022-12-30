@@ -5,3 +5,4 @@ export * from './individualMenu';
 export * from './misc';
 export * from './navbar';
 export * from './products';
+export * from './userDashboard';

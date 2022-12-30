@@ -7,7 +7,7 @@ export async function LogOut() {
   };
 
   await handlerDeleteExternal(urlService, body)
-    .then(({ res }) => {
+    .then((res) => {
       if (res.error) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");

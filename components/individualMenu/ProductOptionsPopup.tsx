@@ -124,7 +124,7 @@ const ProductOptions: FunctionComponent<IPopupProps> = ({
     const userId = user.id_user;
     try {
       const userCart = await handlerGetExternal(urlGetCartService, at!);
-      const resUserCart = userCart.res;
+      const resUserCart = userCart;
       if (resUserCart.error) {
         console.log(resUserCart.errorMessage)
         console.log(resUserCart.httpStatus)

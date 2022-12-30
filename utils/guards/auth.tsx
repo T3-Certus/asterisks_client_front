@@ -45,7 +45,7 @@ export function AuthContext({ children }: any) {
         if (!res.authenticated) {
           console.log(res.data);
         } else {
-          console.log({res})
+          console.log({ res })
           const urlUserService =
             AsterisksServices.ms_user_data +
             `/users/user-data/${res.data.userId}`;
@@ -56,10 +56,10 @@ export function AuthContext({ children }: any) {
             sameSite: true
           })
           handlerGetExternal(urlUserService, accessToken!)
-            .then(({ res }) => {
+            .then((res) => {
               if (res.success) {
                 console.log(res);
-                const {responseBody} = res
+                const { responseBody } = res
                 setAuthUser({
                   ...authUser,
                   id_user: responseBody.id_user,
@@ -81,7 +81,7 @@ export function AuthContext({ children }: any) {
       });
     }
 
-    loadData().then((res)=> console.log(authUser));
+    loadData().then((res) => console.log(authUser));
   }, []);
 
   return (
@@ -122,7 +122,7 @@ async function isAuthenticated(): Promise<IIsAuthenticated> {
         }
       }
     );
-    console.log({ verifiedRT })
+    // console.log({ verifiedRT })
 
     const verifiedAT: any = await jwt.verify(
       accessToken,
@@ -144,8 +144,8 @@ async function isAuthenticated(): Promise<IIsAuthenticated> {
               newTokenDecoded?: number;
             }
             const newAT = await handlerPostExternal(url, body)
-              .then(({ res }): IResNewAT => {
-                console.log(res)
+              .then((res): IResNewAT => {
+                // console.log(res)
                 if (res.success) {
                   localStorage.removeItem("accessToken");
                   localStorage.setItem("accessToken", res.responseBody.accessToken);
@@ -185,7 +185,7 @@ async function isAuthenticated(): Promise<IIsAuthenticated> {
           } else {
             throw new Error(`${err}`);
           }
-        }else{
+        } else {
           // return {
           //   authenticated: true,
           //   data: {
@@ -200,10 +200,10 @@ async function isAuthenticated(): Promise<IIsAuthenticated> {
     console.log({ verifiedAT })
 
 
-    if(!verifiedAT){
+    if (!verifiedAT) {
       throw new Error("Error with AT")
     }
-    return{
+    return {
       authenticated: true,
       data: {
         message: "Successfully authenticated",

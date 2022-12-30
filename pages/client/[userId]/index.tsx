@@ -1,9 +1,16 @@
-import { useRouter } from "next/router";
+import { GetServerSideProps, NextPage } from "next";
+import Router, { useRouter } from "next/router";
 import { useState } from "react";
 import { ErrorComponent, FooterComponent, HeadLayoutComponent, NavbarComponent, PrivateComponent } from "../../../components";
-import { useAuth } from "../../../utils";
+import AddressPanelComponent from "../../../components/userDashboard/AddressesPanel";
+import PersonalDataComponent from "../../../components/userDashboard/PersonalData";
+import { AsterisksServices, handlerGetExternal, PageProps, parseCookies, useAuth } from "../../../utils";
+import jwt from "jsonwebtoken";
+import { useEffect } from "react";
 
-export default function ClientProfile() {
+const ClientProfile: NextPage<PageProps> = ({ data, error, success, reload }) => {
+  console.log(success, error, data);
+
   const router = useRouter();
   const userData = useAuth()
   const user = userData[0]
@@ -12,10 +19,19 @@ export default function ClientProfile() {
   let [userOption, setUserOption] = useState(1);
   console.log(userOption);
 
-  // if (error) {
-  //   return <ErrorComponent data={error} />;
-  // }
+  // useEffect(() => {
+  //   if (reload) {
+  //     window.location.reload()
+  //   }
+  // })
 
+
+
+  // es viable utilizar swr en lugar de ssr para obtener las direcciones del cliente
+
+  if (error) {
+    return <ErrorComponent data={data} />;
+  }
 
   if (!user || user.id_user === 0) {
     return <PrivateComponent />;
@@ -23,9 +39,9 @@ export default function ClientProfile() {
 
   return (
     <div>
-      <HeadLayoutComponent description="" section={`userName`} />
+      <HeadLayoutComponent description="" section={`Mi cuenta`} />
       <NavbarComponent />
-      <div className="flex flex-col w-full h-screen px-40 py-20 gap-11 bg-ivory">
+      <div className="flex flex-col w-full h-auto min-h-screen px-40 py-20 gap-11 bg-ivory">
         <div className="flex flex-col justify-center w-full h-20 px-6 shadow-xl rounded-xl bg-green">
           <p className="text-3xl font-Pacifico text-charleston">
             Hola {user.user_name}
@@ -63,23 +79,92 @@ export default function ClientProfile() {
             </div>
           </div>
           {/* here goes components */}
-          {/* {userOption == 1 ? (
-            <PersonalData
-              name={userData.name}
-              surname={userData.surname}
-              email={userData.email}
+          {userOption == 1 ? (
+            <PersonalDataComponent
+              name={user.user_name}
+              surname={user.user_surname}
+              email={user.user_email}
+              cellphone={user.user_cellphone}
             />
           ) : userOption == 2 ? (
-            <UserPassword />
+            // <UserPassword />
+            <>En construccion</>
           ) : userOption == 3 ? (
-            <Address address={userData.address} />
+            <AddressPanelComponent addresses={data} error={error} />
           ) : (
-            <div>null</div>
-          )} */}
+            <></>
+          )}
         </div>
       </div>
 
       <FooterComponent />
     </div>
   );
+}
+
+export default ClientProfile
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { userId } = context.params!
+  const data = parseCookies(context.req);
+
+  if (!data || !data.accessToken) {
+    return {
+      props: {
+        data: "Ha ocurrido un error, vuelva a intentar",
+        error: true,
+      }
+
+    }
+  }
+  const at = JSON.parse(data.accessToken);
+
+  const urlGetAddressesService = AsterisksServices.ms_address_management + "/get-addresses/" + userId
+
+  const decTok: any = jwt.decode(at)
+  console.log(decTok)
+
+  if (decTok!._id != userId) {
+    return {
+      props: {
+        error: true,
+        data: "Acceso no autorizado"
+      }
+    }
+  }
+  try {
+    const res = await handlerGetExternal(urlGetAddressesService, at)
+    console.log({ res })
+    if (res.error) {
+      if (res.httpStatus == 401) {
+        return {
+          props: {
+            data: res.serverMessage,
+            error: true,
+            reload: true
+          }
+        }
+
+      }
+      return {
+        props: {
+          data: res.serverMessage,
+          error: true
+        }
+      }
+    }
+    return {
+      props: {
+        data: res.responseBody,
+        success: true
+      }
+    }
+  } catch (error) {
+    return {
+      props: {
+        data: `${error}`,
+        error: true
+      }
+    }
+  }
 }

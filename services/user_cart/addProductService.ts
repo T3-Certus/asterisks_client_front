@@ -19,8 +19,8 @@ export async function AddProductService(userId: number, oldCart: ICartPayload[],
       payload: payload
     }
     const updatedCart = await handlerPostExternal(serviceUrl, body, at)
-    if (updatedCart.res.error) {
-      throw new Error(`${updatedCart.res.serverMessage}`)
+    if (updatedCart.error) {
+      throw new Error(`${updatedCart.serverMessage}`)
     }
     return {
       success: true,
